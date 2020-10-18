@@ -18,6 +18,16 @@ TIC = f'{TIC_COLOR}X{bcolors.ENDC}'
 TAC = f'{TAC_COLOR}O{bcolors.ENDC}'
 
 
+class PlaceNonDigit(Exception):
+    "Place is not digit!"
+    pass
+
+
+class PlaceNonAvailable(Exception):
+    "Place is not available!"
+    pass
+
+
 class TicTacGame():
 
     def _get_available(self):
@@ -41,10 +51,15 @@ class TicTacGame():
             self.show_board()
             try:
                 place = input()
+                if not place.isdigit():
+                    raise PlaceNonDigit
                 if not (place in available):
-                    raise ValueError
+                    raise PlaceNonAvailable
                 place = int(place)
-            except ValueError:
+            except PlaceNonDigit:
+                self._cool_print(f" Place '{place}' is not digit, please "
+                                 "try again! ", ch='!', color=ERROR_COLOR)
+            except PlaceNonAvailable:
                 self._cool_print(f" Place '{place}' is not available, please "
                                  "try again! ", ch='!', color=ERROR_COLOR)
             else:

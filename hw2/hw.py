@@ -7,7 +7,7 @@ class Element:
 
 
 class ICache:
-    def __init__(self, capacity: int=10) -> None:
+    def __init__(self, capacity: int = 10) -> None:
         if capacity <= 0 or not isinstance(capacity, int):
             raise ValueError
         self.pointers = {}
@@ -57,17 +57,16 @@ class ICache:
 
 
 class Ilist(list):
+    def _get(self, i):
+        return self[i] if i < len(self) else 0
+
     def __add__(self, other):
-        get = lambda l ,i: l[i] if i < len(l) else 0
-        res = list(get(self, i) + get(other, i) for i 
-                   in range(max(len(self), len(other))))
-        return res
+        return list(self._get(i) + other._get(i) for i
+                    in range(max(len(self), len(other))))
 
     def __sub__(self, other):
-        get = lambda l ,i: l[i] if i < len(l) else 0
-        res = list(get(self, i) - get(other, i) for i 
-                   in range(max(len(self), len(other))))
-        return res
+        return list(self._get(i) - other._get(i) for i
+                    in range(max(len(self), len(other))))
 
     def __eq__(self, other):
         return sum(self) == sum(other)
