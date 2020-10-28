@@ -61,11 +61,11 @@ class Ilist(list):
         return self[i] if i < len(self) else 0
 
     def __add__(self, other):
-        return list(self._get(i) + other._get(i) for i
+        return Ilist(self._get(i) + other._get(i) for i
                     in range(max(len(self), len(other))))
 
     def __sub__(self, other):
-        return list(self._get(i) - other._get(i) for i
+        return Ilist(self._get(i) - other._get(i) for i
                     in range(max(len(self), len(other))))
 
     def __eq__(self, other):
