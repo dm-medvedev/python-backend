@@ -1,5 +1,39 @@
 import argparse
 import cProfile, pstats, io
+from memory_profiler import profile
+from contextlib import redirect_stdout
+from functools import wraps
+
+
+PROFILE_PTH = 'profile.txt'
+
+
+def time_profile(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        pr = cProfile.Profile()
+        pr.enable()
+        res = func(*args, **kwargs)
+        pr.disable()
+        buff = io.StringIO()
+        sortby = 'cumulative'
+        ps = pstats.Stats(pr, stream=buff).sort_stats(sortby)
+        ps.print_stats()
+        with open(PROFILE_PTH, 'w') as f:
+            f.write(buff.getvalue())
+        return res
+    return wrapper
+
+
+def mem_profile(func):
+    func = profile(func)
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with open(PROFILE_PTH,'w') as f:
+            with redirect_stdout(f):
+                res = func(*args, **kwargs)
+        return res
+    return wrapper
 
 
 def parse_args():
@@ -8,8 +42,9 @@ def parse_args():
                         help='number of ladders')
     parser.add_argument('--non_optimal', action='store_true',
                         help='solve it with not optimal way')
-    parser.add_argument('--profile', action='store_true',
-                        help='turn on profiler')
+    parser.add_argument('-profile', choices=['memory', 'time'],
+                        default=None, help='choose profiler, default'
+                        ' is no profiler at all')
     args = parser.parse_args()
     if args.n < 0:
         raise ValueError('number of ladders should be positive!')
@@ -49,18 +84,9 @@ def non_optimal(n: int):
 
 if __name__ == '__main__':
     args = parse_args()
-    if args.profile:
-        pr = cProfile.Profile()
-        pr.enable()
-    if args.non_optimal:
-        print(non_optimal(args.n))
-    else:
-        print(optimal(args.n))
-    if args.profile:
-        pr.disable()
-        buff = io.StringIO()
-        sortby = 'cumulative'
-        ps = pstats.Stats(pr, stream=buff).sort_stats(sortby)
-        ps.print_stats()
-        with open('profile.txt', 'w') as f:
-            f.write(buff.getvalue())
+    func = non_optimal if args.non_optimal else optimal
+    if args.profile == 'time':
+        func = time_profile(func)
+    elif args.profile == 'memory':
+        func = mem_profile(func)
+    print(func(args.n))
