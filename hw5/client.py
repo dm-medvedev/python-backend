@@ -1,6 +1,5 @@
-import socket
-import time
 import argparse
+import socket
 
 
 def parse_args():
@@ -17,7 +16,7 @@ def main(args):
     # time.sleep(100000000)
     sock.sendall(args.request.encode('utf-8'))
     while True:
-        data = sock.recv(4096) # waits
+        data = sock.recv(4096)  # waits
         if not data:
             break
         print(data.decode('utf-8'))

@@ -1,14 +1,17 @@
 #!/usr/bin/python3
-import daemon
-import socket
-import configparser
 import argparse
-from transformers import BertForMaskedLM, BertTokenizer, FillMaskPipeline
+import configparser
 import json
-import dicttoxml
-import time
-import lockfile
 import logging
+import socket
+import time
+
+import daemon
+
+import dicttoxml
+
+from transformers import BertForMaskedLM, BertTokenizer, FillMaskPipeline
+
 
 def get_logger(name, log_path):
     """
@@ -17,16 +20,16 @@ def get_logger(name, log_path):
     https://docs.python.org/3/howto/logging.html
     https://docs.python.org/3/howto/logging-cookbook.html
 
-    Должно быть указано время начала обработки запроса, 
-    время окончания запроса, затраченное на обработку запроса время, 
+    Должно быть указано время начала обработки запроса,
+    время окончания запроса, затраченное на обработку запроса время,
     размер ответа и т.д.
     """
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG) # minimal level
+    logger.setLevel(logging.DEBUG)  # minimal level
     file_handler = logging.FileHandler(log_path)
     file_handler.setLevel(logging.DEBUG)
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.ERROR) # higher level
+    console_handler.setLevel(logging.ERROR)  # higher level
     formatter = logging.Formatter('%(asctime)s - %(name)s - '
                                   '%(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
@@ -40,7 +43,7 @@ class BertAPI():
     def __init__(self):
         self.bert = BertForMaskedLM.from_pretrained("./ruBert")
         self.tokenizer = BertTokenizer.from_pretrained("./ruBert")
-        logger.info(f"successfully loaded BERT in ':memory:'")
+        logger.info("successfully loaded BERT in ':memory:'")
 
     def predict(self, masked_string, topk):
         nlp = FillMaskPipeline(self.bert, self.tokenizer, topk)
@@ -60,9 +63,10 @@ def parse_config(args):
         config.read_file(f)
     config = {'Port': int(config['DEFAULT']['Port']),
               'LogPath': config['DEFAULT']['LogPath'],
-              'AsDaemon': config['DEFAULT']['AsDaemon']=='True',
-              'ServerRecieveTimeOut': float(config['DEFAULT']['ServerRecieveTimeOut']),
-              'MaxConnections': int(config['DEFAULT']['MaxConnections']),}
+              'AsDaemon': config['DEFAULT']['AsDaemon'] == 'True',
+              'ServerRecieveTimeOut': float(config['DEFAULT']
+                                            ['ServerRecieveTimeOut']),
+              'MaxConnections': int(config['DEFAULT']['MaxConnections']), }
     return config
 
 
@@ -90,40 +94,46 @@ def parse_request(request, nlp):
 
 def main(config, logger):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(('', config['Port'])) # Bind the socket to address
-        sock.listen(config['MaxConnections']) # Enable a server to accept connections
+        sock.bind(('', config['Port']))  # Bind the socket to address
+        # Enable a server to accept connections
+        sock.listen(config['MaxConnections'])
         nlp = BertAPI()
-        logger.info(f"successfully launched the server")
+        logger.info("successfully launched the server")
         while True:
-            conn, addr = sock.accept() # Accept a connection. conn is a new socket
+            # Accept a connection. conn is a new socket
+            conn, addr = sock.accept()
             st_req_time = time.time(), time.asctime()
             try:
                 conn.settimeout(config['ServerRecieveTimeOut'])
                 logger.info(f"connected: {addr}")
-                request = conn.recv(4096) # waits
+                request = conn.recv(4096)  # waits
                 if not request:
                     conn.close()
                     continue
             except socket.timeout:
-                conn.send(bytes(f"Server could not wait to receive request", 'utf-8'))
+                conn.send(bytes("Server could not wait to "
+                                "receive request", 'utf-8'))
                 logger.error("Time Out: server waited too long for request")
                 fin_req_time = time.time()
             else:
-                conn.send(bytes(f"Processing ...", 'utf-8'))
+                conn.send(bytes("Processing ...", 'utf-8'))
                 try:
                     result = parse_request(request, nlp)
                 except Exception as ex:
-                    conn.send(bytes(f'Something Wrong, check your request again\n', 'utf-8'))
-                    logger.error(f"exception raised while parsing and processing: {ex}")
+                    conn.send(bytes("Something Wrong, check your "
+                                    "request again\n", 'utf-8'))
+                    logger.error("exception raised while parsing "
+                                 f"and processing: {ex}")
                     # logit
                 else:
                     result
                     conn.send(bytes(f'{result}', 'utf-8'))
                 fin_req_time = time.time(), time.asctime()
                 logger.info("CONNECTION INFO:"
-                    f"started: {st_req_time[1]}, finished: {fin_req_time[1]}"
-                    f", duration (sec): {fin_req_time[0] - st_req_time[0]:.5f}")
-            finally: 
+                            f"started: {st_req_time[1]}, "
+                            f"finished: {fin_req_time[1]}, duration (sec): "
+                            f"{fin_req_time[0]- st_req_time[0]:.5f}")
+            finally:
                 conn.close()
 
 
@@ -136,10 +146,11 @@ if __name__ == '__main__':
     logger = get_logger(__name__, config['LogPath'])
     if config['AsDaemon']:
         context = daemon.DaemonContext(umask=0o002,
-                                       working_directory = '/home/dmitry/МАГА/python-backend/hw5',
+                                       working_directory='/home/dmitry/МАГА/'
+                                       'python-backend/hw5',
                                        uid=1000, gid=1000)
         context.files_preserve = [logger.handlers[0].stream.fileno(),
-                                  open('./ruBert/config.json'), 
+                                  open('./ruBert/config.json'),
                                   open('./ruBert/pytorch_model.bin'),
                                   open('./ruBert/vocab.txt')]
         try:
