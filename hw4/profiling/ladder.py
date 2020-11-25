@@ -1,8 +1,11 @@
 import argparse
-import cProfile, pstats, io
-from memory_profiler import profile
+import cProfile
+import io
+import pstats
 from contextlib import redirect_stdout
 from functools import wraps
+
+from memory_profiler import profile
 
 
 PROFILE_PTH = 'profile.txt'
@@ -27,9 +30,10 @@ def time_profile(func):
 
 def mem_profile(func):
     func = profile(func)
+
     @wraps(func)
     def wrapper(*args, **kwargs):
-        with open(PROFILE_PTH,'w') as f:
+        with open(PROFILE_PTH, 'w') as f:
             with redirect_stdout(f):
                 res = func(*args, **kwargs)
         return res
@@ -64,14 +68,14 @@ def optimal(n: int):
 
 
 def non_optimal_step(i, n):
-        fin = 0
-        for c in f"{i:b}":
-            fin+=int(c)+1
-            if fin>n:
-                break
-        cond1 = fin < n and (n-len(f"{i:b}"))>=(n-fin)
-        cond2 = fin == n
-        return int(cond1 | cond2)
+    fin = 0
+    for c in f"{i:b}":
+        fin += int(c) + 1
+        if fin > n:
+            break
+    cond1 = fin < n and (n - len(f"{i:b}")) >= (n - fin)
+    cond2 = fin == n
+    return int(cond1 | cond2)
 
 
 def non_optimal(n: int):

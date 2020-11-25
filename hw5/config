@@ -1,0 +1,6 @@
+[DEFAULT]
+Port = 10023
+LogPath = server.log
+AsDaemon = True
+ServerRecieveTimeOut = 3
+MaxConnections = 1
