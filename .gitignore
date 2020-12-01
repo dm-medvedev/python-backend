@@ -1,7 +1,9 @@
 **/_*
 **/*.txt
+**/*.csv
 **/*.log
 */.*
 **/*.ipynb
 **/Data
-**/ruBert
+hw5/ruBert
+hw6/venv
