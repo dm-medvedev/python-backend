@@ -1,5 +1,7 @@
+#!/usr/bin/python3
 import argparse
 import socket
+import time
 
 
 def parse_args():
@@ -11,9 +13,9 @@ def parse_args():
 
 def main(args):
     sock = socket.socket()
-    sock.connect(('127.0.0.1', 10023))
+    sock.connect(('127.0.0.1', 10029))
     print('connected')
-    # time.sleep(100000000)
+    time.sleep(2)
     sock.sendall(args.request.encode('utf-8'))
     while True:
         data = sock.recv(4096)  # waits

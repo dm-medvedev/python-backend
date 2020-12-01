@@ -1,6 +1,6 @@
 [DEFAULT]
-Port = 10023
+Port = 10029
 LogPath = server.log
-AsDaemon = True
+AsDaemon = False
 ServerRecieveTimeOut = 3
 MaxConnections = 1

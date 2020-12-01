@@ -24,17 +24,20 @@ def get_logger(name, log_path):
     время окончания запроса, затраченное на обработку запроса время,
     размер ответа и т.д.
     """
+    is_path_empty = log_path == ''
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)  # minimal level
-    file_handler = logging.FileHandler(log_path)
-    file_handler.setLevel(logging.DEBUG)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.ERROR)  # higher level
     formatter = logging.Formatter('%(asctime)s - %(name)s - '
                                   '%(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
+    if not is_path_empty:
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG if is_path_empty
+                             else logging.ERROR)  # higher level
     console_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
     logger.addHandler(console_handler)
     return logger
 
@@ -46,7 +49,7 @@ class BertAPI():
         logger.info("successfully loaded BERT in ':memory:'")
 
     def predict(self, masked_string, topk):
-        nlp = FillMaskPipeline(self.bert, self.tokenizer, topk)
+        nlp = FillMaskPipeline(self.bert, self.tokenizer, topk=topk)
         return nlp(masked_string)
 
 
@@ -86,7 +89,7 @@ def parse_request(request, nlp):
     if not('string' in request.keys()):
         # log it and raise it
         raise KeyError("'string' key is required")
-    result = nlp.predict(request['string'], request.get('topk', 5))
+    result = nlp.predict(request['string'], int(request.get('topk', 5)))
     result = {f"top {i+1}": el for i, el in enumerate(result)}
     result = format_result(result, request['format'])
     return result
@@ -114,7 +117,6 @@ def main(config, logger):
                 conn.send(bytes("Server could not wait to "
                                 "receive request", 'utf-8'))
                 logger.error("Time Out: server waited too long for request")
-                fin_req_time = time.time()
             else:
                 conn.send(bytes("Processing ...", 'utf-8'))
                 try:
@@ -128,13 +130,14 @@ def main(config, logger):
                 else:
                     result
                     conn.send(bytes(f'{result}', 'utf-8'))
+            finally:
+                conn.close()
+                fin_req_time = time.time()
                 fin_req_time = time.time(), time.asctime()
                 logger.info("CONNECTION INFO:"
                             f"started: {st_req_time[1]}, "
                             f"finished: {fin_req_time[1]}, duration (sec): "
                             f"{fin_req_time[0]- st_req_time[0]:.5f}")
-            finally:
-                conn.close()
 
 
 if __name__ == '__main__':
