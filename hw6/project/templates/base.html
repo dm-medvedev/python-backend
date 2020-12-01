@@ -1,0 +1,14 @@
+<html>
+    <head/>
+    <body>
+        <h1>{{ title }} </h1>
+        {% for paper in papers %}
+            <div>
+                <h2>{{ paper.title }} - {{ paper.published_at }}</h2>
+                <h3>{{ paper.author }} for "{{ paper.source_name}}" </h3>
+                <p>{{ paper.description }}</p>
+                <p>{{ paper.url }}</p>
+            </div>
+        {% endfor %}
+    </body>
+</html>
