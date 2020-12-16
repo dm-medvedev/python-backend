@@ -1,5 +1,9 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
+from django.contrib.auth.views import redirect_to_login
+from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import login_required
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,14 +12,34 @@ from .models import Paper
 from .serializers import PaperSerializer
 
 
+# def login_required(function):
+#     def wrapper(request):
+#         if request.user.is_authenticated:
+#             return function(request)
+#         else:
+#             path = request.build_absolute_uri()
+#             return redirect_to_login(path)
+#     return wrapper
+
+
+def login(request):
+    return render(request, 'login.html')
+
+
+@login_required
+def home(request):
+    print(request.user)
+    return render(request, 'home.html')
+
+@login_required
 def paper_view(request):
     return HttpResponse("Welcome to papers you can visit "
                         "`papers/all` and `papers/api`!")
 
-
+@login_required
 def paper_html_view(request):
     papers = Paper.objects.all()
-    return render(request, 'base.html',
+    return render(request, 'papers-all.html',
                   {'title': 'Available papers', 'papers': papers})
 
 
@@ -30,6 +54,10 @@ def filter_request(request):
 
 
 class PaperView(APIView):
+    @classmethod
+    def as_view(cls):
+        return login_required(super().as_view())
+
     def get(self, request):
         try:
             papers = filter_request(request)
@@ -53,6 +81,7 @@ class PaperView(APIView):
 
     def put(self, request):
         try:
+            print(request.POST.items())
             Paper.objects.create(**{k: v for k, v in request.POST.items()})
             return Response({'put': 'success'})
         except:
@@ -67,3 +96,5 @@ class PaperView(APIView):
             return Response({'delete': 'success'})
         except:
             raise Http404
+
+

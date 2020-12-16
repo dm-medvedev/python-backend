@@ -1,0 +1,5 @@
+[GENERAL]
+log_path = server.log
+server_recieve_time_out = 3
+n_workers = 12
+top_k = 5

@@ -6,5 +6,5 @@
 **/*.ipynb
 **/Data
 hw5/ruBert
-hw6/venv
+**/venv
 !**/requirements.txt

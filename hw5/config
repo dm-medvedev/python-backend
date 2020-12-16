@@ -1,6 +1,11 @@
-[DEFAULT]
-Port = 10029
-LogPath = server.log
-AsDaemon = False
-ServerRecieveTimeOut = 3
-MaxConnections = 1
+[GENERAL]
+port = 10033
+log_path = server.log
+as_daemon = False
+server_recieve_time_out = 3
+max_connections = 1
+
+[BERT]
+config = ./ruBert/config.json
+model = ./ruBert/pytorch_model.bin
+vocab = ./ruBert/vocab.txt
