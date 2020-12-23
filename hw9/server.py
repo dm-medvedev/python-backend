@@ -27,7 +27,7 @@ def get_logger(name, log_path):
     размер ответа и т.д.
     """
     is_path_empty = log_path == ''
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)  # minimal level
     formatter = logging.Formatter('%(asctime)s - %(name)s - '
                                   '%(levelname)s - %(message)s')

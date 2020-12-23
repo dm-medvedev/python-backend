@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.contrib.auth.views import redirect_to_login
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,14 +12,14 @@ from .models import Paper
 from .serializers import PaperSerializer
 
 
-# def login_required(function):
-#     def wrapper(request):
-#         if request.user.is_authenticated:
-#             return function(request)
-#         else:
-#             path = request.build_absolute_uri()
-#             return redirect_to_login(path)
-#     return wrapper
+def login_required(function):
+    def wrapper(request):
+        if request.user.is_authenticated:
+            return function(request)
+        else:
+            path = request.build_absolute_uri()
+            return redirect_to_login(path)
+    return wrapper
 
 
 def login(request):
