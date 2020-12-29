@@ -1,6 +1,0 @@
-version: "2.1"
-services:
-  web:
-    image: dm4medvedev/django-app:v1
-    ports:
-      - "8000:9000"

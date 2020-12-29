@@ -1,0 +1,17 @@
+version: "2.1"
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+  web:
+    image: dm4medvedev/django-app:v2
+    command: ./project/manage.py runserver 0.0.0.0:9000
+    ports:
+      - "8000:9000"
+    depends_on:
+      - db

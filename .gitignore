@@ -7,4 +7,5 @@
 **/Data
 hw5/ruBert
 **/venv
+**/old
 !**/requirements.txt

@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 from .models import Paper
 from .serializers import PaperSerializer
 
+import logging
+logger = logging.getLogger(__name__)
 
 def paper_view(request):
     return HttpResponse("Welcome to papers you can visit "
@@ -25,7 +27,7 @@ def filter_request(request):
     kwargs = {f"{field.name}__icontains": dict_.get(field.name, None)
               for field in Paper._meta.fields}
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    papers = [] if len(kwargs) == 0 else papers.filter(**kwargs)
+    papers = papers if len(kwargs) == 0 else papers.filter(**kwargs)
     return papers
 
 
@@ -53,6 +55,7 @@ class PaperView(APIView):
 
     def put(self, request):
         try:
+            d = {k: v for k, v in request.POST.items()}
             Paper.objects.create(**{k: v for k, v in request.POST.items()})
             return Response({'put': 'success'})
         except:
